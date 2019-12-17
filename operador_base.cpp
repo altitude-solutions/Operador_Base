@@ -88,6 +88,7 @@ Operador_base::Operador_base(QWidget *parent) :
      };
 
      ui -> table_gral -> setHorizontalHeaderLabels(headers);
+
 }
 
 Operador_base::~Operador_base()

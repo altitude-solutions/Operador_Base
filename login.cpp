@@ -12,7 +12,7 @@ Login::Login(QWidget *parent)
     ui->setupUi(this);
     //operador_radio = new Operador_radio(this);
 
-    //operador_radio.hide();
+    operador_base.hide();
 
     //Get screen Size
    const auto screens = qApp->screens();
@@ -37,10 +37,10 @@ Login::Login(QWidget *parent)
     connect(ui->password, SIGNAL(returnPressed()),ui->login_button,SLOT(click()));
 
     //Send the name to the next window
-    //connect(this,SIGNAL(send_name(QString)),&operador_radio,SLOT(recibir_nombre(QString)));
+    connect(this,SIGNAL(send_name(QString)),&operador_base,SLOT(recibir_nombre(QString)));
 
     //Close the session
-    //connect(&operador_radio, &Operador_radio::logOut, this, &Login::cerrar);
+    connect(&operador_base, &Operador_base::logOut, this, &Login::cerrar);
 }
 
 Login::~Login()
@@ -48,19 +48,17 @@ Login::~Login()
     delete ui;
 }
 
-//Function to call the second MainWindow Widget with a button click
 void Login::on_login_button_clicked()
 {
     QString name = ui -> user ->text();
     emit send_name(name);
-    //operador_radio.show();
+    operador_base.show();
     this->hide();
 }
 
 void Login::cerrar(){
 
-    //operador_radio.hide();
-
+    operador_base.hide();
     ui ->user -> setText("");
     ui -> password -> setText("");
 

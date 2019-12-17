@@ -2,6 +2,7 @@
 #define LOGIN_H
 
 #include <QWidget>
+#include <operador_base.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Login; }
@@ -24,5 +25,6 @@ private slots:
 
 private:
     Ui::Login *ui;
+    Operador_base operador_base;
 };
 #endif // LOGIN_H

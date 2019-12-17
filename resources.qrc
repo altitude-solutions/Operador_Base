@@ -1,5 +1,46 @@
 <RCC>
     <qresource prefix="/images">
         <file>images/LPL.png</file>
+        <file>images/almuerzo.png</file>
+        <file>images/almuerzo-verde.png</file>
+        <file>images/ayudantes.png</file>
+        <file>images/ayudantes-blanco.png</file>
+        <file>images/base.png</file>
+        <file>images/camion-blanco.png</file>
+        <file>images/conciliacion_blanco.png</file>
+        <file>images/conciliacion_verde.png</file>
+        <file>images/conductor.png</file>
+        <file>images/conductor-blanco.png</file>
+        <file>images/contenedor_blanco.png</file>
+        <file>images/contenedor_verde.png</file>
+        <file>images/contenedor2_blanco.png</file>
+        <file>images/contenedor2_verde.png</file>
+        <file>images/dato_blanco.png</file>
+        <file>images/dato_verde.png</file>
+        <file>images/ejecucion_blanco.png</file>
+        <file>images/ejecucion_verde.png</file>
+        <file>images/encargadoLPL_blanco.png</file>
+        <file>images/encargadoLPL_verde.png</file>
+        <file>images/equis-blanca.png</file>
+        <file>images/Flech.png</file>
+        <file>images/flecha.png</file>
+        <file>images/flecha_2.png</file>
+        <file>images/flecha-blanca.png</file>
+        <file>images/huella_verde.png</file>
+        <file>images/movil.png</file>
+        <file>images/movil_blanco.png</file>
+        <file>images/movil_verde.png</file>
+        <file>images/radio_blanco.png</file>
+        <file>images/radio_verde.png</file>
+        <file>images/relleno.png</file>
+        <file>images/ruta.png</file>
+        <file>images/ruta-blanco.png</file>
+        <file>images/ruta-verde.png</file>
+        <file>images/search.png</file>
+        <file>images/search_2.png</file>
+        <file>images/siremo_blanco.png</file>
+        <file>images/siremo_verde.png</file>
+        <file>images/verificacion_blanco.png</file>
+        <file>images/verificacion_verde.png</file>
     </qresource>
 </RCC>

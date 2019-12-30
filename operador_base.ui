@@ -139,8 +139,7 @@ color: #333333</string>
                </property>
                <property name="styleSheet">
                 <string notr="true">font: 11pt &quot;MS Shell Dlg 2&quot;;
-color:#333333;
-max-width:10em;</string>
+color:#333333;</string>
                </property>
                <property name="text">
                 <string>Nombre      </string>
@@ -559,9 +558,9 @@ color:#333333;</string>
                        <string notr="true">background-color: white;
 border-style: outset;
 border-radius: 12px;
-font: 12pt &quot;MS Shell Dlg 2&quot;;
+font: 10pt &quot;MS Shell Dlg 2&quot;;
 color: #333333;
-min-width: 9em;
+min-width: 12em;
 padding: 3px;</string>
                       </property>
                       <property name="alignment">
@@ -745,9 +744,9 @@ color:#333333;</string>
                      <string notr="true">background-color: white;
 border-style: outset;
 border-radius: 12px;
-font: 12pt &quot;MS Shell Dlg 2&quot;;
+font: 10pt &quot;MS Shell Dlg 2&quot;;
 color: #333333;
-min-width: 9em;
+min-width: 12em;
 padding: 3px;</string>
                     </property>
                     <property name="alignment">
@@ -803,9 +802,9 @@ color:#333333;</string>
                      <string notr="true">background-color: white;
 border-style: outset;
 border-radius: 12px;
-font: 12pt &quot;MS Shell Dlg 2&quot;;
+font: 10pt &quot;MS Shell Dlg 2&quot;;
 color: #333333;
-min-width: 9em;
+min-width: 12em;
 padding: 3px;</string>
                     </property>
                     <property name="alignment">
@@ -861,9 +860,9 @@ color:#333333;</string>
                      <string notr="true">background-color: white;
 border-style: outset;
 border-radius: 12px;
-font: 12pt &quot;MS Shell Dlg 2&quot;;
+font: 10pt &quot;MS Shell Dlg 2&quot;;
 color: #333333;
-min-width: 9em;
+min-width: 12em;
 padding: 3px;</string>
                     </property>
                     <property name="alignment">
@@ -1241,7 +1240,7 @@ padding: 3px;</string>
           <widget class="QTableWidget" name="table_gral">
            <property name="styleSheet">
             <string notr="true">QTableWidget{
-background-color: #EBEDED;
+background-color: white;
 border-top: 2.5px solid white;
 border-bottom: 2.5px solid white;
 border-right: 2.5px solid white;

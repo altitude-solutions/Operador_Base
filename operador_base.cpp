@@ -4,12 +4,17 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QCloseEvent>
-#include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QJsonValue>
+#include <QMessageBox>
 #include <QDir>
 #include <QDebug>
+#include <QCompleter>
 
 Operador_base::Operador_base(QWidget *parent) :
     QMainWindow(parent),
@@ -101,12 +106,23 @@ void Operador_base::showTime(){
     ui->label_date->setText(tiempo);
 }
 
-void Operador_base::recibir_nombre(QString nombre){
-    ui -> label_user -> setText(nombre);
+void Operador_base::recibir_nombre(QString user, QString real, QString token){
+    ui -> label_user -> setText(real);
+    this -> user = user;
+    this -> token = token;
+
+    from_db_readStaff();
+    from_db_readVehicle();
+}
+
+void Operador_base::receive_url(QString url){
+    this -> url = url;
 }
 
 void Operador_base::on_close_button_clicked()
 {
+    data.clear();
+    update_table(data);
     emit logOut();
 }
 
@@ -127,19 +143,59 @@ void Operador_base::on_button_guardar_clicked()
 
     //This is temporal, the ID is going to be changed
     QString time = ui -> label_date -> text();
+    QHashIterator<QString, QHash<QString, QString>>staff_iter(db_staff);
 
     if(movil!=""&& conductor != "" && salida_base !="" && llegada_base!=""){
 
         data[time]["movil"] = movil;
         data[time]["conductor"] = conductor;
+
+        while(staff_iter.hasNext()){
+            auto key = staff_iter.next().key();
+
+            if(db_staff[key]["nombre"]==conductor){
+                data[time]["conductor_id"] = key;
+                break;
+            }
+        }
+
+        while(staff_iter.hasNext()){
+            auto key = staff_iter.next().key();
+
+            if(db_staff[key]["nombre"]==ayudante_1){
+                data[time]["ayudante_1_id"] = key;
+                break;
+            }
+        }
+
+        while(staff_iter.hasNext()){
+            auto key = staff_iter.next().key();
+
+            if(db_staff[key]["nombre"]==ayudante_2){
+                data[time]["ayudante_2_id"] = key;
+                break;
+            }
+        }
+
+        while(staff_iter.hasNext()){
+            auto key = staff_iter.next().key();
+
+            if(db_staff[key]["nombre"]==ayudante_3){
+                data[time]["ayudante_3_id"] = key;
+                break;
+            }
+        }
+
         data[time]["ayudante_1"] = ayudante_1;
         data[time]["ayudante_2"] = ayudante_2;
         data[time]["ayudante_3"] = ayudante_3;
         data[time]["salida_base"] = salida_base;
         data[time]["llegada_base"] = llegada_base;
         data[time]["time"] = time;
+
         save();
         update_table(data);
+
         restart();
 
     }
@@ -224,4 +280,233 @@ void Operador_base::restart(){
     ui -> ayudante_3 -> setText("");
     ui -> salida_base -> setText("");
     ui -> llegada_base -> setText("");
+}
+
+void Operador_base::from_db_readStaff()
+{
+    QNetworkAccessManager* nam = new QNetworkAccessManager (this);
+
+    connect (nam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
+
+        QByteArray resBin = reply->readAll ();
+
+        if (reply->error ()) {
+            QJsonDocument errorJson = QJsonDocument::fromJson (resBin);
+            QMessageBox::critical (this, "Error", QString::fromStdString (errorJson.toJson ().toStdString ()));
+            return;
+        }
+
+        QJsonDocument okJson = QJsonDocument::fromJson (resBin);
+
+        foreach (QJsonValue entidad, okJson.object ().value ("personnel").toArray ()) {
+
+            QHash<QString, QString> current;
+
+            current.insert ("idPersonal", entidad.toObject ().value ("idPersonal").toString());
+            current.insert ("nombre", entidad.toObject ().value ("nombre").toString());
+
+            db_staff.insert(entidad.toObject().value ("idPersonal").toString(), current);
+
+        }
+
+        //Extracting labels for staff
+        QHashIterator<QString, QHash<QString, QString>>staff_iter(db_staff);
+        QStringList staff_list;
+
+        while(staff_iter.hasNext()){
+            staff_list<<db_staff[staff_iter.next().key()]["nombre"];
+        }
+        std::sort(staff_list.begin(), staff_list.end());
+
+        QCompleter *staff_completer = new QCompleter(staff_list,this);
+
+        staff_completer -> setCaseSensitivity(Qt::CaseInsensitive);
+        staff_completer -> setCompletionMode(QCompleter::PopupCompletion);
+        staff_completer -> setFilterMode(Qt::MatchContains);
+        ui -> conductor -> setCompleter(staff_completer);
+        ui -> ayudante_1 -> setCompleter(staff_completer);
+        ui -> ayudante_2 -> setCompleter(staff_completer);
+        ui -> ayudante_3 -> setCompleter(staff_completer);
+
+        reply->deleteLater ();
+    });
+
+    QNetworkRequest request;
+
+    //change URL
+    request.setUrl (QUrl ("http://"+this->url+"/personnel?from=0&to=10000&status=1"));
+
+    request.setRawHeader ("token", this -> token.toUtf8 ());
+    request.setRawHeader ("Content-Type", "application/json");
+    nam->get (request);
+}
+
+
+void Operador_base::from_db_readVehicle(){
+
+    QNetworkAccessManager* nam = new QNetworkAccessManager (this);
+
+    connect (nam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
+
+        QByteArray resBin = reply->readAll ();
+
+        if (reply->error ()) {
+            QJsonDocument errorJson = QJsonDocument::fromJson (resBin);
+            QMessageBox::critical (this, "Error", QString::fromStdString (errorJson.toJson ().toStdString ()));
+            return;
+        }
+
+        QJsonDocument okJson = QJsonDocument::fromJson (resBin);
+
+        foreach (QJsonValue entidad, okJson.object ().value ("vehiculos").toArray ()) {
+
+            QHash<QString, QString> current;
+            current.insert ("numeroDeAyudantes", QString::number (entidad.toObject ().value ("numeroDeAyudantes").toInt ()));
+            current.insert ("movil", entidad.toObject ().value ("movil").toString());
+            db_vehicle.insert (entidad.toObject ().value ("movil").toString (), current);
+        }
+
+        //Extracting labels for movil
+        QHashIterator<QString, QHash<QString, QString>>movil_iter(db_vehicle);
+        QStringList movil_list;
+
+        while(movil_iter.hasNext()){
+            movil_list<<movil_iter.next().key();
+        }
+        std::sort(movil_list.begin(), movil_list.end());
+
+        QCompleter *movil_completer = new QCompleter(movil_list,this);
+
+        movil_completer -> setCaseSensitivity(Qt::CaseInsensitive);
+        movil_completer -> setCompletionMode(QCompleter::PopupCompletion);
+        movil_completer -> setFilterMode(Qt::MatchStartsWith);
+        ui -> movil -> setCompleter(movil_completer);
+
+        reply->deleteLater ();
+    });
+
+    QNetworkRequest request;
+
+    //change URL
+    qDebug()<<this->url;
+    request.setUrl (QUrl ("http://"+this->url+"/vehi?from=0&to=1000&status=1"));
+
+    request.setRawHeader ("token", this -> token.toUtf8 ());
+    request.setRawHeader ("Content-Type", "application/json");
+    nam->get (request);
+}
+
+void Operador_base::on_movil_editingFinished()
+{
+    QString current = ui -> movil -> text();
+    QHashIterator<QString, QHash<QString, QString>>car_iter(db_vehicle);
+    int counter = 0;
+
+    if (current != ""){
+        while(car_iter.hasNext()){
+            auto key = car_iter.next().key();
+
+            if(key==current){
+                counter = 1;
+                break;
+            }
+        }
+
+        if(counter != 1){
+            QMessageBox::critical (this, "Error", "Vehiculo no se encunetra registrado en la base de datos");
+            ui -> movil -> setText("");
+        }
+    }
+}
+
+void Operador_base::on_conductor_editingFinished()
+{
+    QString current = ui -> conductor -> text();
+    QHashIterator<QString, QHash<QString, QString>>car_iter(db_staff);
+    int counter = 0;
+
+    if (current != ""){
+        while(car_iter.hasNext()){
+            auto key = car_iter.next().key();
+
+            if(db_staff[key]["nombre"]==current){
+                counter = 1;
+                break;
+            }
+        }
+
+        if(counter != 1){
+            QMessageBox::critical (this, "Error", "Personal no registrado en la base de datos");
+            ui -> conductor -> setText("");
+        }
+    }
+}
+
+void Operador_base::on_ayudante_1_editingFinished()
+{
+    QString current = ui -> ayudante_1 -> text();
+    QHashIterator<QString, QHash<QString, QString>>car_iter(db_staff);
+    int counter = 0;
+
+    if (current != ""){
+        while(car_iter.hasNext()){
+            auto key = car_iter.next().key();
+
+            if(db_staff[key]["nombre"]==current){
+                counter = 1;
+                break;
+            }
+        }
+
+        if(counter != 1){
+            QMessageBox::critical (this, "Error", "Personal no registrado en la base de datos");
+            ui -> ayudante_1 -> setText("");
+        }
+    }
+}
+
+void Operador_base::on_ayudante_2_editingFinished()
+{
+    QString current = ui -> ayudante_2 -> text();
+    QHashIterator<QString, QHash<QString, QString>>car_iter(db_staff);
+    int counter = 0;
+
+    if (current != ""){
+        while(car_iter.hasNext()){
+            auto key = car_iter.next().key();
+
+            if(db_staff[key]["nombre"]==current){
+                counter = 1;
+                break;
+            }
+        }
+
+        if(counter != 1){
+            QMessageBox::critical (this, "Error", "Personal no registrado en la base de datos");
+            ui -> ayudante_2 -> setText("");
+        }
+    }
+}
+
+void Operador_base::on_ayudante_3_editingFinished()
+{
+    QString current = ui -> ayudante_3 -> text();
+    QHashIterator<QString, QHash<QString, QString>>car_iter(db_staff);
+    int counter = 0;
+
+    if (current != ""){
+        while(car_iter.hasNext()){
+            auto key = car_iter.next().key();
+
+            if(db_staff[key]["nombre"]==current){
+                counter = 1;
+                break;
+            }
+        }
+
+        if(counter != 1){
+            QMessageBox::critical (this, "Error", "Personal no registrado en la base de datos");
+            ui -> ayudante_3 -> setText("");
+        }
+    }
 }

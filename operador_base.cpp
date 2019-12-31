@@ -53,15 +53,15 @@ Operador_base::Operador_base(QWidget *parent) :
     ui->icon_movil->setPixmap(pix_movil.scaled( static_cast<int>(pix_w_b),static_cast<int>(pix_h_b), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     ui->icon_movil->setFixedSize(static_cast<int>(pix_w_b), static_cast<int>(pix_h_b));
 
-    QPixmap pix_conductor(":/images/images/conductor.png");
+    QPixmap pix_conductor(":/images/images/conductor_verde.png");
     ui->icon_conductor->setPixmap(pix_conductor.scaled( static_cast<int>(pix_w_b),static_cast<int>(pix_h_b), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     ui->icon_conductor->setFixedSize(static_cast<int>(pix_w_b), static_cast<int>(pix_h_b));
 
-    QPixmap pix_ayudantes(":/images/images/ayudantes.png");
+    QPixmap pix_ayudantes(":/images/images/ayudantes_verde.png");
     ui->icon_ayudantes->setPixmap(pix_ayudantes.scaled( static_cast<int>(pix_w_b),static_cast<int>(pix_h_b), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     ui->icon_ayudantes->setFixedSize(static_cast<int>(pix_w_b), static_cast<int>(pix_h_b));
 
-    QPixmap pix_kilometraje(":/images/images/ruta-verde.png");
+    QPixmap pix_kilometraje(":/images/images/kilometraje_verde.png");
     ui->icon_kilometraje->setPixmap(pix_kilometraje.scaled( static_cast<int>(pix_w_b),static_cast<int>(pix_h_b), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     ui->icon_kilometraje->setFixedSize(static_cast<int>(pix_w_b), static_cast<int>(pix_h_b));
 

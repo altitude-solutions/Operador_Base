@@ -42,5 +42,8 @@
         <file>images/siremo_verde.png</file>
         <file>images/verificacion_blanco.png</file>
         <file>images/verificacion_verde.png</file>
+        <file>images/kilometraje_verde.png</file>
+        <file>images/ayudantes_verde.png</file>
+        <file>images/conductor_verde.png</file>
     </qresource>
 </RCC>

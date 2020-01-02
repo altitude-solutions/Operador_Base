@@ -45,6 +45,8 @@ private slots:
 
     void on_ayudante_3_editingFinished();
 
+    void saveJson(QHash<QString, QHash<QString,QString>>);
+
 private:
     Ui::Operador_base *ui;
 

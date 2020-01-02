@@ -102,7 +102,7 @@ Operador_base::~Operador_base()
 }
 
 void Operador_base::showTime(){
-    QString tiempo = QDateTime::currentDateTime().toString("MM/dd/yyyy - hh:mm:ss");
+    QString tiempo = QDateTime::currentDateTime().toString("dd/MM/yyyy - hh:mm:ss");
     ui->label_date->setText(tiempo);
 }
 
@@ -121,9 +121,8 @@ void Operador_base::receive_url(QString url){
 
 void Operador_base::on_close_button_clicked()
 {
+    saveJson(data);
     data.clear();
-    update_table(data);
-    emit logOut();
 }
 
 void Operador_base::closeEvent(QCloseEvent *event){
@@ -155,34 +154,15 @@ void Operador_base::on_button_guardar_clicked()
 
             if(db_staff[key]["nombre"]==conductor){
                 data[time]["conductor_id"] = key;
-                break;
             }
-        }
-
-        while(staff_iter.hasNext()){
-            auto key = staff_iter.next().key();
-
             if(db_staff[key]["nombre"]==ayudante_1){
                 data[time]["ayudante_1_id"] = key;
-                break;
             }
-        }
-
-        while(staff_iter.hasNext()){
-            auto key = staff_iter.next().key();
-
             if(db_staff[key]["nombre"]==ayudante_2){
                 data[time]["ayudante_2_id"] = key;
-                break;
             }
-        }
-
-        while(staff_iter.hasNext()){
-            auto key = staff_iter.next().key();
-
             if(db_staff[key]["nombre"]==ayudante_3){
                 data[time]["ayudante_3_id"] = key;
-                break;
             }
         }
 
@@ -509,4 +489,66 @@ void Operador_base::on_ayudante_3_editingFinished()
             ui -> ayudante_3 -> setText("");
         }
     }
+}
+
+void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
+
+    QJsonDocument document;
+    QJsonArray main_array;
+
+    //We need to create a virtual id duplicated container
+    QStringList saved;
+
+    QHashIterator<QString, QHash<QString, QString>>iter(saver);
+    while(iter.hasNext()){
+        auto main_key = iter.next().key();
+
+        QJsonObject main_object;
+
+        main_object.insert("kilometrajeSalida", saver[main_key]["salida_base"]);
+        main_object.insert("kilometrajeEntrada", saver[main_key]["llegada_base"]);
+        main_object.insert("movil", saver[main_key]["movil"]);
+        main_object.insert("conductor", saver[main_key]["conductor_id"]);
+        main_object.insert("ayudante_1", saver[main_key]["ayudante_1_id"]);
+        main_object.insert("ayudante_2", saver[main_key]["ayudante_2_id"]);
+        main_object.insert("ayudante_3", saver[main_key]["ayudante_3_id"]);
+
+        main_object.insert("fecha",QDateTime::fromString(saver[main_key]["time"],"dd/MM/yyyy - hh:mm:ss").toMSecsSinceEpoch());
+
+        main_object.insert("usuario", this -> user);
+
+        main_array.append(main_object);
+    }
+
+    document.setArray(main_array);
+
+    /****************************************************/
+    /*****************TO DATABASE*********************/
+    /****************************************************/
+
+    QNetworkAccessManager* nam = new QNetworkAccessManager (this);
+    connect (nam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
+        QByteArray binReply = reply->readAll ();
+        if (reply->error ()) {
+            QJsonDocument errorJson = QJsonDocument::fromJson (binReply);
+            if (errorJson.object ().value ("err").toObject ().contains ("message")) {
+                QMessageBox::critical (this, "Error", QString::fromLatin1 (errorJson.object ().value ("err").toObject ().value ("message").toString ().toLatin1 ()));
+            } else {
+                QMessageBox::critical (this, "Error en base de datos", "Por favor enviar un reporte de error con una captura de pantalla de esta venta.\n" + QString::fromStdString (errorJson.toJson ().toStdString ()));
+                //TODO SAVE LOCAL IN CASE OF LOSS CONNECTION
+                emit logOut();
+            }
+        }
+        else{
+            emit logOut();
+        }
+        reply->deleteLater ();
+    });
+
+    QNetworkRequest request;
+    request.setUrl (QUrl ("http://"+this -> url + "/operadorBase"));
+    request.setRawHeader ("token", this -> token.toUtf8 ());
+    request.setRawHeader ("Content-Type", "application/json");
+
+    nam->post (request, document.toJson ());
 }

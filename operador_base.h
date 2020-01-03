@@ -26,7 +26,7 @@ private slots:
     void on_close_button_clicked();
     void recibir_nombre(QString,QString,QString);
     void on_button_guardar_clicked();
-    void save();
+    void save(QString);
     void update_table(QHash<QString, QHash<QString,QString>>);
     void restart();
     void receive_url(QString);
@@ -46,12 +46,14 @@ private slots:
     void on_ayudante_3_editingFinished();
 
     void saveJson(QHash<QString, QHash<QString,QString>>);
+    void read_done();
 
 private:
     Ui::Operador_base *ui;
 
     //Hash to save every register
     QHash<QString, QHash<QString,QString>> data;
+    QHash<QString, QHash<QString,QString>> done;
 
     //From database
     QHash<QString, QHash<QString,QString>> db_staff;

@@ -107,6 +107,7 @@ void Operador_base::showTime(){
 }
 
 void Operador_base::recibir_nombre(QString user, QString real, QString token){
+    read_done();
     ui -> label_user -> setText(real);
     this -> user = user;
     this -> token = token;
@@ -121,6 +122,14 @@ void Operador_base::receive_url(QString url){
 
 void Operador_base::on_close_button_clicked()
 {
+    QHashIterator<QString, QHash<QString, QString>>iter(data);
+
+    while (iter.hasNext()){
+
+        auto key = iter.next().key();
+        done[key]=data[key];
+
+    }
     saveJson(data);
     data.clear();
 }
@@ -173,7 +182,7 @@ void Operador_base::on_button_guardar_clicked()
         data[time]["llegada_base"] = llegada_base;
         data[time]["time"] = time;
 
-        save();
+        save("pendant");
         update_table(data);
 
         restart();
@@ -184,12 +193,21 @@ void Operador_base::on_button_guardar_clicked()
     }
 }
 
-void Operador_base::save(){
+void Operador_base::save(QString action){
 
     QJsonDocument documentoxd;
     QJsonObject datosxd;
     QJsonArray arrayDeDatos;
-    QHash<QString, QHash<QString, QString>>saver = data;
+    QHash<QString, QHash<QString, QString>>saver;
+
+
+    if(action == "pendant"){
+        saver = data;
+    }
+    else{
+        saver = done;
+    }
+
     QHashIterator<QString, QHash<QString, QString>>iterator(saver);
 
     while(iterator.hasNext()){
@@ -210,7 +228,7 @@ void Operador_base::save(){
     QDir any;
     any.mkdir(path+"/LPL_documents/BaseOperator");
 
-    QString filename= path+"/LPL_documents/BaseOperator/info.txt";
+    QString filename= path+"/LPL_documents/BaseOperator/"+action+"_info.txt";
 
     QFile file(filename );
     if(!file.open(QFile::WriteOnly)){
@@ -536,10 +554,13 @@ void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
             } else {
                 QMessageBox::critical (this, "Error en base de datos", "Por favor enviar un reporte de error con una captura de pantalla de esta venta.\n" + QString::fromStdString (errorJson.toJson ().toStdString ()));
                 //TODO SAVE LOCAL IN CASE OF LOSS CONNECTION
+                save("done");
                 emit logOut();
             }
         }
         else{
+            done.clear();
+            save("done");
             emit logOut();
         }
         reply->deleteLater ();
@@ -552,3 +573,39 @@ void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
 
     nam->post (request, document.toJson ());
 }
+
+void Operador_base::read_done(){
+
+    QString contenido;
+    QString path = QDir::homePath();
+    QString filename= path+"/LPL_documents/BaseOperator/done_info.txt";
+    QFile file(filename );
+    if(!file.open(QFile::ReadOnly)){
+            qDebug()<<"No se puede abrir archivo";
+    }
+    else{
+        contenido = file.readAll();
+        file.close();
+    }
+    QJsonDocument documentyd = QJsonDocument::fromJson(contenido.toUtf8());
+    QJsonArray arraydatos = documentyd.array();
+    foreach(QJsonValue objetoxd, arraydatos){
+        QHash<QString,QString> current;
+
+        current.insert("movil", objetoxd.toObject().value("movil").toString());
+        current.insert("conductor", objetoxd.toObject().value("conductor").toString());
+        current.insert("conductor_id", objetoxd.toObject().value("conductor_id").toString());
+        current.insert("ayudante_1_id", objetoxd.toObject().value("ayudante_1_id").toString());
+        current.insert("ayudante_2_id", objetoxd.toObject().value("ayudante_2_id").toString());
+        current.insert("ayudante_3_id",objetoxd.toObject().value("ayudante_3_id").toString());
+        current.insert("salida_base",objetoxd.toObject().value("salida_base").toString());
+        current.insert("llegada_base",objetoxd.toObject().value("llegada_base").toString());
+        current.insert("time",objetoxd.toObject().value("time").toString());
+        current.insert("ayudante_1",objetoxd.toObject().value("ayudante_1").toString());
+        current.insert("ayudante_2", objetoxd.toObject().value("ayudante_2").toString());
+        current.insert("ayudante_3", objetoxd.toObject().value("ayudante_3").toString());
+
+        done.insert(objetoxd.toObject().value("time").toString(),current);
+    }
+}
+

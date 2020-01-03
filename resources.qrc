@@ -45,5 +45,6 @@
         <file>images/kilometraje_verde.png</file>
         <file>images/ayudantes_verde.png</file>
         <file>images/conductor_verde.png</file>
+        <file>LPL.ico</file>
     </qresource>
 </RCC>

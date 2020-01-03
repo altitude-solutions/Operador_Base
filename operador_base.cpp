@@ -22,7 +22,7 @@ Operador_base::Operador_base(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QIcon icon(":/images/images/LPL.png");
+    QIcon icon(":/images/LPL.ico");
     this -> setWindowIcon(icon);
 
     //Get screen Size
@@ -533,7 +533,7 @@ void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
 
         main_object.insert("fecha",QDateTime::fromString(saver[main_key]["time"],"dd/MM/yyyy - hh:mm:ss").toMSecsSinceEpoch());
 
-        main_object.insert("usuario", this -> user);
+        main_object.insert("usuario_id", this -> user);
 
         main_array.append(main_object);
     }

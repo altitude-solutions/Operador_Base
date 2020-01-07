@@ -609,3 +609,37 @@ void Operador_base::read_done(){
     }
 }
 
+
+void Operador_base::on_salida_base_editingFinished()
+{
+    QString var = ui -> salida_base -> text();
+
+    bool validator = false;
+    double validation =  var.toDouble(&validator);
+
+    if(validation <= 0){
+        QMessageBox::critical (this, "Error", "Formato inválido usar el punto decimal porfavor y solo números");
+        ui -> salida_base -> setText("");
+    }
+}
+
+void Operador_base::on_llegada_base_editingFinished()
+{
+    QString data = ui -> salida_base -> text();
+    QString corroborate = ui -> llegada_base -> text();
+
+    double in = data.toDouble();
+    double out = corroborate.toDouble();
+
+    if(out > 0){
+        if(out<in){
+            QMessageBox::critical (this, "Error", "El kilometraje de regreso no puede ser menor al de salida");
+            ui -> llegada_base -> setText("");
+        }
+    }
+    else{
+        QMessageBox::critical (this, "Error", "Formato inválido usar el punto decimal porfavor y solo números");
+        ui -> llegada_base -> setText("");
+    }
+
+}

@@ -46,5 +46,6 @@
         <file>images/ayudantes_verde.png</file>
         <file>images/conductor_verde.png</file>
         <file>LPL.ico</file>
+        <file>images/flecha_adelante.png</file>
     </qresource>
 </RCC>

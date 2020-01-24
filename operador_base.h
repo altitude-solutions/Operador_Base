@@ -35,6 +35,11 @@ private slots:
     void from_db_readStaff();
     void from_db_readVehicle();
 
+    //Read tables from localfile
+    void from_lf_readStaff();
+    void from_lf_readVehicle();
+    void file_writing(QHash<QString, QHash<QString,QString>>, QString);
+
     void on_movil_editingFinished();
 
     void on_conductor_editingFinished();
@@ -51,6 +56,8 @@ private slots:
     void on_salida_base_editingFinished();
 
     void on_llegada_base_editingFinished();
+
+    void on_refresh_clicked();
 
 private:
     Ui::Operador_base *ui;

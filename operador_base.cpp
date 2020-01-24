@@ -94,6 +94,13 @@ Operador_base::Operador_base(QWidget *parent) :
 
      ui -> table_gral -> setHorizontalHeaderLabels(headers);
 
+     //Icons
+     QPixmap pix_b(":/images/images/flecha_adelante.png");
+
+     QIcon ButtonIcon(pix_b);
+
+     ui->refresh->setIcon(ButtonIcon);
+     ui->refresh->setIconSize(QSize(17,17));
 }
 
 Operador_base::~Operador_base()
@@ -112,8 +119,12 @@ void Operador_base::recibir_nombre(QString user, QString real, QString token){
     this -> user = user;
     this -> token = token;
 
-    from_db_readStaff();
-    from_db_readVehicle();
+    //read data from a local file
+    from_lf_readStaff();
+    from_lf_readVehicle();
+
+//    from_db_readStaff();
+//    from_db_readVehicle();
 }
 
 void Operador_base::receive_url(QString url){
@@ -295,6 +306,7 @@ void Operador_base::from_db_readStaff()
         }
 
         QJsonDocument okJson = QJsonDocument::fromJson (resBin);
+        QHash<QString, QHash<QString, QString>>temporal;
 
         foreach (QJsonValue entidad, okJson.object ().value ("personnel").toArray ()) {
 
@@ -303,29 +315,11 @@ void Operador_base::from_db_readStaff()
             current.insert ("idPersonal", entidad.toObject ().value ("idPersonal").toString());
             current.insert ("nombre", entidad.toObject ().value ("nombre").toString());
 
-            db_staff.insert(entidad.toObject().value ("idPersonal").toString(), current);
+            temporal.insert(entidad.toObject().value ("idPersonal").toString(), current);
 
         }
-
-        //Extracting labels for staff
-        QHashIterator<QString, QHash<QString, QString>>staff_iter(db_staff);
-        QStringList staff_list;
-
-        while(staff_iter.hasNext()){
-            staff_list<<db_staff[staff_iter.next().key()]["nombre"];
-        }
-        std::sort(staff_list.begin(), staff_list.end());
-
-        QCompleter *staff_completer = new QCompleter(staff_list,this);
-
-        staff_completer -> setCaseSensitivity(Qt::CaseInsensitive);
-        staff_completer -> setCompletionMode(QCompleter::PopupCompletion);
-        staff_completer -> setFilterMode(Qt::MatchContains);
-        ui -> conductor -> setCompleter(staff_completer);
-        ui -> ayudante_1 -> setCompleter(staff_completer);
-        ui -> ayudante_2 -> setCompleter(staff_completer);
-        ui -> ayudante_3 -> setCompleter(staff_completer);
-
+        file_writing(temporal,"staff.txt");
+        from_db_readVehicle();
         reply->deleteLater ();
     });
 
@@ -355,32 +349,21 @@ void Operador_base::from_db_readVehicle(){
         }
 
         QJsonDocument okJson = QJsonDocument::fromJson (resBin);
+        QHash<QString, QHash<QString, QString>>temporal;
 
         foreach (QJsonValue entidad, okJson.object ().value ("vehiculos").toArray ()) {
 
             QHash<QString, QString> current;
             current.insert ("numeroDeAyudantes", QString::number (entidad.toObject ().value ("numeroDeAyudantes").toInt ()));
             current.insert ("movil", entidad.toObject ().value ("movil").toString());
-            db_vehicle.insert (entidad.toObject ().value ("movil").toString (), current);
+            temporal.insert (entidad.toObject ().value ("movil").toString (), current);
         }
 
-        //Extracting labels for movil
-        QHashIterator<QString, QHash<QString, QString>>movil_iter(db_vehicle);
-        QStringList movil_list;
-
-        while(movil_iter.hasNext()){
-            movil_list<<movil_iter.next().key();
-        }
-        std::sort(movil_list.begin(), movil_list.end());
-
-        QCompleter *movil_completer = new QCompleter(movil_list,this);
-
-        movil_completer -> setCaseSensitivity(Qt::CaseInsensitive);
-        movil_completer -> setCompletionMode(QCompleter::PopupCompletion);
-        movil_completer -> setFilterMode(Qt::MatchStartsWith);
-        ui -> movil -> setCompleter(movil_completer);
-
-        reply->deleteLater ();
+        file_writing(temporal,"vehicles.txt");
+        from_lf_readStaff();
+        from_lf_readVehicle();
+        QMessageBox::information(this, "Base de datos", "Datos actualizados con éxito");
+       reply->deleteLater ();
     });
 
     QNetworkRequest request;
@@ -540,9 +523,6 @@ void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
 
     document.setArray(main_array);
 
-    /****************************************************/
-    /*****************TO DATABASE*********************/
-    /****************************************************/
 
     QNetworkAccessManager* nam = new QNetworkAccessManager (this);
     connect (nam, &QNetworkAccessManager::finished, this, [&](QNetworkReply* reply) {
@@ -642,4 +622,145 @@ void Operador_base::on_llegada_base_editingFinished()
         ui -> llegada_base -> setText("");
     }
 
+}
+
+void Operador_base::from_lf_readStaff(){
+    db_vehicle.clear();
+    QString contenido;
+    QString path = QDir::homePath();
+    QString filename= path+"/LPL_documents/BaseOperator/db_files/vehicles.txt";
+    QFile file(filename );
+
+    if(!file.open(QFile::ReadOnly)){
+            qDebug()<<"No se puede abrir archivo";
+    }
+    else{
+        contenido = file.readAll();
+        file.close();
+    }
+
+    QJsonDocument document = QJsonDocument::fromJson(contenido.toUtf8());
+    QJsonArray arraydatos = document.array();
+
+    foreach(QJsonValue object, arraydatos){
+
+        QHash<QString,QString> current;
+        current.insert ("numeroDeAyudantes", object.toObject ().value ("numeroDeAyudantes").toString());
+        current.insert ("movil", object.toObject ().value ("movil").toString());
+
+        db_vehicle.insert(object.toObject().value("movil").toString(),current);
+    }
+
+    //Extracting labels for movil
+    QHashIterator<QString, QHash<QString, QString>>movil_iter(db_vehicle);
+    QStringList movil_list;
+
+    while(movil_iter.hasNext()){
+        movil_list<<movil_iter.next().key();
+    }
+    std::sort(movil_list.begin(), movil_list.end());
+
+    QCompleter *movil_completer = new QCompleter(movil_list,this);
+
+    movil_completer -> setCaseSensitivity(Qt::CaseInsensitive);
+    movil_completer -> setCompletionMode(QCompleter::PopupCompletion);
+    movil_completer -> setFilterMode(Qt::MatchStartsWith);
+
+    ui -> movil -> setCompleter(movil_completer);
+}
+
+void Operador_base::from_lf_readVehicle()
+{
+    db_staff.clear();
+    QString contenido;
+    QString path = QDir::homePath();
+    QString filename= path+"/LPL_documents/BaseOperator/db_files/staff.txt";
+    QFile file(filename );
+
+    if(!file.open(QFile::ReadOnly)){
+            qDebug()<<"No se puede abrir archivo";
+    }
+    else{
+        contenido = file.readAll();
+        file.close();
+    }
+
+    QJsonDocument document = QJsonDocument::fromJson(contenido.toUtf8());
+    QJsonArray arraydatos = document.array();
+
+    foreach(QJsonValue object, arraydatos){
+
+        QHash<QString,QString> current;
+        current.insert ("idPersonal", object.toObject ().value ("idPersonal").toString());
+        current.insert ("nombre", object.toObject ().value ("nombre").toString());
+
+        db_staff.insert(object.toObject().value("idPersonal").toString(),current);
+    }
+
+    //Extracting labels for staff
+    QHashIterator<QString, QHash<QString, QString>>staff_iter(db_staff);
+    QStringList staff_list;
+
+    while(staff_iter.hasNext()){
+        staff_list<<db_staff[staff_iter.next().key()]["nombre"];
+    }
+    std::sort(staff_list.begin(), staff_list.end());
+
+    QCompleter *staff_completer = new QCompleter(staff_list,this);
+
+    staff_completer -> setCaseSensitivity(Qt::CaseInsensitive);
+    staff_completer -> setCompletionMode(QCompleter::PopupCompletion);
+    staff_completer -> setFilterMode(Qt::MatchContains);
+    ui -> conductor -> setCompleter(staff_completer);
+    ui -> ayudante_1 -> setCompleter(staff_completer);
+    ui -> ayudante_2 -> setCompleter(staff_completer);
+    ui -> ayudante_3 -> setCompleter(staff_completer);
+}
+
+void Operador_base::file_writing(QHash<QString, QHash<QString,QString>>saver, QString json){
+
+    QJsonDocument document;
+    QJsonArray array;
+    QHashIterator<QString, QHash<QString, QString>>iterator(saver);
+
+    while(iterator.hasNext()){
+        auto item = iterator.next().key();
+
+        QHashIterator<QString,QString>it_2(saver[item]);
+        QJsonObject currnt;
+
+        while(it_2.hasNext()){
+            auto valores=it_2.next();
+            currnt.insert(valores.key(),valores.value());
+        }
+
+        array.append(currnt);
+     }
+
+    document.setArray(array);
+    QString path = QDir::homePath();
+
+    QDir any;
+    any.mkdir(path+"/LPL_documents/BaseOperator/db_files");
+    QString filename= path+"/LPL_documents/BaseOperator/db_files/"+json;
+
+    QFile file(filename );
+    if(!file.open(QFile::WriteOnly)){
+            qDebug()<<"No se puede abrir archivo";
+            return;
+    }
+    file.write(document.toJson());
+    file.close();
+}
+
+
+void Operador_base::on_refresh_clicked()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Actualizar base de datos", "Seguro desea actualizar los datos?\n"
+                                                                    "-Esta acción debería realizarse unicamente cuando se notifican cambios en la base de datos\n"
+                                                                    "-Cerciorarse de tener conexión a internet porfavor",QMessageBox::Yes|QMessageBox::No);
+    if(reply == QMessageBox::Yes){
+        from_db_readStaff();
+    }
 }

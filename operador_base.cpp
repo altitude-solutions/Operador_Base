@@ -264,7 +264,7 @@ void Operador_base::save(QString action){
 
     QFile file(filename );
     if(!file.open(QFile::WriteOnly)){
-            qDebug()<<"No se puede abrir archivo";
+            qDebug()<<"No se puede abrir archivo \"" + action + "_info.txt\"";
             return;
     }
 
@@ -471,6 +471,13 @@ void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
         main_object.insert("ayudante_2", saver[main_key]["ayudante_2_id"]);
         main_object.insert("ayudante_3", saver[main_key]["ayudante_3_id"]);
 
+
+        // ====================================================
+        main_object.insert("comentarios",  saver[main_key]["comentarios"]);
+        main_object.insert("ruta_id", saver[main_key]["ruta_id"]);
+
+
+
         main_object.insert("fecha",QDateTime::fromString(saver[main_key]["time"],"dd/MM/yyyy - hh:mm:ss").toMSecsSinceEpoch());
         main_object.insert("usuario_id", this -> user);
 
@@ -518,7 +525,7 @@ void Operador_base::read_done(){
     QString filename= path+"/LPL_documents/BaseOperator/done_info.txt";
     QFile file(filename );
     if(!file.open(QFile::ReadOnly)){
-            qDebug()<<"No se puede abrir archivo";
+            qDebug()<<"No se puede abrir archivo \"done_info.txt\"";
     }
     else{
         contenido = file.readAll();
@@ -610,6 +617,8 @@ void Operador_base::on_ruta_editingFinished(){
     QString current = ui -> ruta -> text();
     QHashIterator<QString, QHash<QString, QString>>rutas_iter(db_rutas);
     int counter = 0;
+
+//    qDebug() << db_rutas;
 
     if (current != ""){
         while(rutas_iter.hasNext()){
@@ -730,7 +739,7 @@ void Operador_base::from_lf_readStaff(){
     QFile file(filename );
 
     if(!file.open(QFile::ReadOnly)){
-            qDebug()<<"No se puede abrir archivo";
+            qDebug()<<"No se puede abrir archivo que contiene los Vehiculos";
     }
     else{
         contenido = file.readAll();
@@ -772,11 +781,11 @@ void Operador_base::from_lf_readRoutes()
     db_rutas.clear();
     QString contenido;
     QString path = QDir::homePath();
-    QString filename= path+"/LPL_documents/db_files/rutas.txt";
+    QString filename= path+"/LPL_documents/BaseOperator/db_files/rutas.txt";
     QFile file(filename );
 
     if(!file.open(QFile::ReadOnly)){
-            qDebug()<<"No se puede abrir archivo";
+            qDebug()<<"º abrir archivo que contiene las Rutas";
     }
     else{
         contenido = file.readAll();
@@ -821,7 +830,7 @@ void Operador_base::from_lf_readVehicle()
     QFile file(filename );
 
     if(!file.open(QFile::ReadOnly)){
-            qDebug()<<"No se puede abrir archivo";
+            qDebug()<<"No se puede abrir archivo  que contiene el Personal";
     }
     else{
         contenido = file.readAll();
@@ -891,7 +900,7 @@ void Operador_base::file_writing(QHash<QString, QHash<QString,QString>>saver, QS
 
     QFile file(filename );
     if(!file.open(QFile::WriteOnly)){
-            qDebug()<<"No se puede abrir archivo";
+            qDebug()<<"No se puede abrir archivo \"" + json + "\"";
             return;
     }
     file.write(document.toJson());

@@ -1,6 +1,6 @@
 #include <windows.h>
 
-IDI_ICON1	ICON	"C:\\Users\\andyg\\Documents\\qt\\La Paz Limpia\\Operador de Base\\Operador_base\\LPL.ico"
+IDI_ICON1	ICON	"C:\\Users\Javier\\Documents\\LPL\\Apps\\Operador_base\\LPL.ico"
 
 VS_VERSION_INFO VERSIONINFO
 	FILEVERSION 0,0,0,0

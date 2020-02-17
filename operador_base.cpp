@@ -16,12 +16,10 @@
 #include <QDebug>
 #include <QCompleter>
 
-Operador_base::Operador_base(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::Operador_base)
-{
+Operador_base::Operador_base(QWidget *parent): QMainWindow(parent), ui(new Ui::Operador_base) {
     ui->setupUi(this);
 
+    this->setWindowTitle("Operador de Base");
     QIcon icon(":/images/LPL.ico");
     this -> setWindowIcon(icon);
 
@@ -126,6 +124,24 @@ void Operador_base::showTime(){
 
 void Operador_base::recibir_nombre(QString user, QString real, QString token){
     read_done();
+    data.clear();
+    ui -> table_gral -> clear();
+
+    QStringList headers = {
+        "Móvil",
+        "Ruta",
+        "Conductor",
+        "Ayudante 1",
+        "Ayudante 2",
+        "Ayudante 3",
+        "Salida Base",
+        "Llegada Base",
+        "Comentarios"
+    };
+
+    ui -> table_gral -> setHorizontalHeaderLabels(headers);
+
+
     ui -> label_user -> setText(real);
     this -> user = user;
     this -> token = token;
@@ -203,6 +219,7 @@ void Operador_base::on_button_guardar_clicked()
 
             if(db_rutas[rutas_key]["ruta"]==ruta){
                 data[time]["ruta_id"] = rutas_key;
+                break;
             }
         }
 
@@ -471,12 +488,8 @@ void Operador_base::saveJson(QHash<QString,QHash<QString,QString>>saver){
         main_object.insert("ayudante_2", saver[main_key]["ayudante_2_id"]);
         main_object.insert("ayudante_3", saver[main_key]["ayudante_3_id"]);
 
-
-        // ====================================================
-        main_object.insert("comentarios",  saver[main_key]["comentarios"]);
-        main_object.insert("ruta_id", saver[main_key]["ruta_id"]);
-
-
+        main_object.insert("ruta_id",saver[main_key]["ruta_id"]);
+        main_object.insert("comentarios",saver[main_key]["comentarios"]);
 
         main_object.insert("fecha",QDateTime::fromString(saver[main_key]["time"],"dd/MM/yyyy - hh:mm:ss").toMSecsSinceEpoch());
         main_object.insert("usuario_id", this -> user);

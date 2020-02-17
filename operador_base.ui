@@ -107,7 +107,7 @@
 color: #333333</string>
              </property>
              <property name="text">
-              <string>RUTA DE OPERACIONES</string>
+              <string>HOJA DE RUTA DE OPERACIONES</string>
              </property>
             </widget>
            </item>
